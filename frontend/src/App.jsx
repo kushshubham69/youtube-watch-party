@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import "./App.css";
 
-const API = "http://localhost:8081/api/rooms";
-const WS = "ws://localhost:8081/ws/rooms";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8081";
+const WS_BASE = import.meta.env.VITE_WS_BASE_URL || "ws://localhost:8081";
+
+const API = `${API_BASE}/api/rooms`;
+const WS = `${WS_BASE}/ws/rooms`;
 
 function extractYouTubeVideoId(value) {
   const input = value.trim();
