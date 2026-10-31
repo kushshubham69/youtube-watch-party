@@ -2,6 +2,12 @@
 
 this is a web application where people can join a room and watch youtube videos together. the host controls the video, and other participants can watch along in real time. the application also supports moderators, playback requests and room chat.
 
+## live application
+
+- frontend: https://youtube-watch-party-lime.vercel.app/
+- backend: https://youtube-watch-party-backend-92as.onrender.com
+- backend health: https://youtube-watch-party-backend-92as.onrender.com/api/health
+
 ## features
 
 - create a room and share its room code with others
@@ -22,6 +28,18 @@ this is a web application where people can join a room and watch youtube videos 
 - real-time communication: websocket
 - video player: youtube iframe player api
 - room management: java collections using concurrenthashmap
+
+## system architecture
+
+the application uses a react frontend and a spring boot backend.
+
+1. the react frontend provides the room interface, participant controls, chat and youtube player.
+2. the spring boot backend manages rooms, participants, roles, playback requests and chat-related operations.
+3. rest api endpoints handle room operations and playback requests.
+4. websocket connections handle real-time updates between participants in the same room.
+5. the youtube iframe player api is used to play and control youtube videos in the browser.
+
+room information and related state are currently maintained in backend application memory.
 
 ## running the project locally
 
@@ -115,6 +133,6 @@ the following steps can be used to check the main features:
 
 ## project status
 
-the application is being prepared for public deployment as part of a technical assessment.
+the application is deployed and available for testing.
 
-the live application link will be added here after deployment.
+the project was developed as part of a full-stack technical assessment.
