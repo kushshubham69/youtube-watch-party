@@ -803,7 +803,7 @@ function App() {
         </section>
       </main>
 
-      <footer className="footer"><span>WATCHPARTY © 2026</span><span>MADE FOR SHARED MOMENTS</span></footer>
+      
     </div>
   );
 }
