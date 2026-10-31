@@ -1,3 +1,4 @@
+
 package com.watchparty;
 
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,10 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(roomWebSocketHandler, "/ws/rooms/*")
-                .setAllowedOrigins("http://localhost:5173", "http://localhost:5174");
+                .setAllowedOrigins(
+                        "http://localhost:5173",
+                        "http://localhost:5174",
+                        "https://youtube-watch-party-lime.vercel.app"
+                );
     }
 }
