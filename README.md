@@ -1,42 +1,50 @@
-# YouTube Watch Party
+# youtube watch party
 
-A React + Spring Boot application for watching YouTube videos together in rooms. Room state is shared through WebSockets, while the backend checks permissions before applying playback changes.
+this is a web application where people can join a room and watch youtube videos together. the host controls the video, and other participants can watch along in real time. the application also supports moderators, playback requests and room chat.
 
-## Features
+## features
 
-- Create a room and join with a room code.
-- Host, Moderator and Participant roles.
-- Host can promote/demote participants and remove participants.
-- Host and Moderator can control playback directly.
-- Participants can request play, pause, seek or video changes.
-- Host or Moderator can approve or reject participant playback requests.
-- Approved playback actions update the room state and are broadcast to connected users.
-- YouTube videos are embedded using the YouTube IFrame Player API.
+- create a room and share its room code with others
+- join an existing room
+- three roles: host, moderator and participant
+- host can promote or demote participants and remove them from the room
+- host and moderators can control video playback
+- participants can request permission to play, pause, seek or change the video
+- host or moderator can approve or reject these requests
+- video playback is synchronized between room participants
+- youtube videos are played using the youtube iframe player
+- participants can send messages in the room chat
 
-## Technology
+## technologies used
 
-- Frontend: React + Vite
-- Backend: Java + Spring Boot
-- Real-time communication: WebSocket
-- Video: YouTube IFrame Player API
-- Room storage: in-memory `ConcurrentHashMap` (rooms are lost when the backend restarts)
+- frontend: react and vite
+- backend: java and spring boot
+- real-time communication: websocket
+- video player: youtube iframe player api
+- room management: java collections using concurrenthashmap
 
-## Run locally
+## running the project locally
 
-### Backend
+### backend setup
+
+open a terminal and move into the backend folder.
 
 ```powershell
 cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
-Backend default URL: `http://localhost:8081`
+the backend runs at:
 
-Health check: `http://localhost:8081/api/health`
+`http://localhost:8081`
 
-### Frontend
+you can check whether the backend is running using:
 
-Open a second terminal:
+`http://localhost:8081/api/health`
+
+### frontend setup
+
+open another terminal and move into the frontend folder.
 
 ```powershell
 cd frontend
@@ -44,88 +52,69 @@ npm.cmd install
 npm.cmd run dev -- --port 5174
 ```
 
-Frontend URL: `http://localhost:5174`
+the frontend runs at:
 
-If PowerShell cannot find Node.js, add `C:\Program Files\nodejs` to PATH or run this in the current terminal:
+`http://localhost:5174`
+
+if powershell cannot find node.js, add it to the current terminal path:
 
 ```powershell
 $env:Path += ";C:\Program Files\nodejs"
 ```
 
-## Participant approval workflow
+## how playback requests work
 
-Participants cannot directly change playback. They can submit one pending request per participant for `PLAY`, `PAUSE`, `SEEK` or `CHANGE_VIDEO`.
+participants cannot directly control the video. they have to send a request to the host or moderator.
 
-A Host or Moderator can approve or reject the request. Approval applies the action to the room and broadcasts the updated room snapshot over WebSocket. Rejection removes the pending request without changing playback.
+the available actions are:
 
-### Approval API endpoints
+- `PLAY`
+- `PAUSE`
+- `SEEK`
+- `CHANGE_VIDEO`
 
-- `POST /api/rooms/{roomId}/playback-requests` — submit a participant request.
-- `PUT /api/rooms/{roomId}/playback-requests/{requestId}/approve` — approve as Host/Moderator.
-- `PUT /api/rooms/{roomId}/playback-requests/{requestId}/reject` — reject as Host/Moderator.
+the host or moderator can approve or reject a request. if approved, the backend updates the playback state and sends the updated information to everyone in the room through websocket.
 
-Request payload for submitting an action:
+### playback request endpoints
 
-```json
-{
-  "userId": "PARTICIPANT_USER_ID",
-  "action": "PAUSE",
-  "videoId": null,
-  "currentTime": 42.5
-}
-```
+- `POST /api/rooms/{roomId}/playback-requests` to submit a request.
+- `PUT /api/rooms/{roomId}/playback-requests/{requestId}/approve` to approve a request.
+- `PUT /api/rooms/{roomId}/playback-requests/{requestId}/reject` to reject a request.
 
-Approval/rejection payload:
+## room chat
 
-```json
-{
-  "approverId": "HOST_OR_MODERATOR_USER_ID"
-}
-```
+the application also includes a basic chat feature. participants can send messages to other people in the same room.
 
-## Manual test checklist
+- messages are sent through the existing websocket connection
+- each message is associated with the participant's session
+- messages can contain up to 500 characters
+- the latest 50 messages are kept in room memory
+- messages are only shared with participants in the same room
+- removed participants cannot continue sending messages through the room connection
 
-1. Host creates a room and a Participant joins.
-2. Participant submits a play/pause/seek/video-change request.
-3. Host and Moderator see the pending request.
-4. Approve the request and verify the room playback state changes for all connected users.
-5. Submit another request and reject it; verify playback does not change.
-6. Verify a Participant cannot approve or reject requests.
-7. Verify Host/Moderator can still control playback directly.
+## testing
 
-## Current limitations
+the following steps can be used to check the main features:
 
-- Rooms and pending requests are stored in memory and are lost when the backend restarts.
-- The current assessment build uses user IDs supplied by the frontend in REST request bodies. A production deployment should add authenticated sessions/tokens and derive user identity from the authenticated connection rather than trusting a client-supplied ID.
-- A live public deployment URL has not yet been configured.
+1. create a room using one browser.
+2. join the same room using another browser.
+3. check whether both users can see each other in the participant list.
+4. promote a participant to moderator and check the role update.
+5. try controlling playback as a participant and submit a request.
+6. approve the request as host or moderator.
+7. check whether playback changes for both users.
+8. send messages from both browsers and check whether they appear correctly.
+9. try removing a participant and check whether they are disconnected.
 
-## Real-time room chat
+## current limitations
 
-A lightweight room chat is available in the room details panel. Messages are sent through the existing WebSocket connection, not a separate chat server.
+- room information, participant details and chat messages are stored in application memory.
+- this information is lost if the backend restarts.
+- the application currently does not have a login system or persistent database.
+- the backend uses a single running instance for room management.
 
-- Each message is associated with the participant identity from the established WebSocket session; the client cannot choose another sender's user ID.
-- Messages are limited to 500 characters.
-- The room keeps the latest 50 messages in memory and includes them in the room snapshot for participants who join later.
-- Chat messages are broadcast only to connected sessions in the same room.
-- A removed participant is disconnected from the room WebSocket and cannot continue sending messages.
+## project status
 
-Client-to-server chat message:
+the application is being prepared for public deployment as part of a technical assessment.
 
-```json
-{
-  "type": "CHAT_MESSAGE",
-  "message": "Hello everyone!"
-}
-```
-
-The server broadcasts an updated room snapshot containing `chatMessages` to the room. Chat history is in memory only and is lost when the backend restarts.
-
-## Chat test checklist
-
-1. Open two browser sessions and join the same room.
-2. Send a message from Browser A; verify it appears in both sessions.
-3. Reply from Browser B; verify it appears in both sessions with the correct username.
-4. Open another participant session and verify recent messages are included when it connects.
-5. Send a message longer than 500 characters and verify the server rejects it.
-6. Remove a participant and verify their WebSocket closes and they can no longer send messages.
-7. Open a separate room and verify its chat does not receive messages from the first room.
+the live application link will be added here after deployment.
